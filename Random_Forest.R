@@ -1,19 +1,21 @@
 # Random Forest Classification
+
 #install.packages("mice")
+#install.packages("caTools")
+#install.packages("caret")
+# install.packages('randomForest')
+library(caTools)
 library(mice)
 library(caret)
+library(randomForest)
+
+
 # Importing the dataset
-dataset<-read.csv("/Users/DK/Desktop/U of T hackathon/training_data.csv", header=TRUE)
-testset<-read.csv("/Users/DK/Desktop/U of T hackathon/test_data.csv", header=TRUE)
-#dataset = dataset[3:5]
+dataset<-read.csv("/Users/DK/Documents/Machine_Learning/R/Side_Projects/Random_Forest_Attempt/training_data.csv", header=TRUE)
+testset<-read.csv("/Users/DK/Documents/Machine_Learning/R/Side_Projects/Random_Forest_Attempt/test_data.csv", header=TRUE)
 
 # Encoding the target feature as factor
 dataset$num = factor(dataset$num, levels = c(0,1,2,3,4))
-
-# Splitting the dataset into the Training set and Test set
-# install.packages('caTools')
-library(caTools)
-set.seed(123)
 
 #Encoding the dataset
 dataset$fbs<-as.numeric(as.character(dataset$fbs))
@@ -28,14 +30,11 @@ dataset$cp[(dataset$cp<1) | (dataset$cp>4)]<-NA
 dataset$exang<-as.numeric(as.character(dataset$exang))
 dataset$exang[(dataset$exang<0) | (dataset$exang>1)]<-NA
 
-
 dataset$slope<-as.numeric(as.character(dataset$slope))
 dataset$slope[(dataset$slope<1) | (dataset$slope>3)]<-NA
 
-
 dataset$thal<-as.numeric(as.character(dataset$thal))
 dataset$thal[(dataset$thal!=3) & (dataset$thal!=7) & (dataset$thal!=6) ]<-NA
-
 
 #Proper Naming
 dataset$trestbps<-as.numeric(dataset$trestbps)
@@ -66,13 +65,10 @@ dataset$ca <- as.numeric(factor(dataset$ca)) # not doing level conversion becaus
 dataset$thal <- as.numeric(factor(dataset$thal))
 levels(dataset$thal) <- c("normal","fixed","reversable",NA)
 
-#dataset$num <- as.numeric(factor(dataset$num)) # not doing level conversion because its not necessary
-
-#Filling all the NA
+#Filling all the NA 
 for(i in 1:ncol(dataset)){
-  dataset[is.na(dataset[,i]),i]<- mean(dataset[,i], na.rm = TRUE)
+  dataset[is.na(dataset[,i]),i]<- 2 #mean(dataset[,i], na.rm = TRUE)
 }
-
 
 #Splitting dataset
 split = sample.split(dataset$num, SplitRatio = 0.75)
@@ -89,16 +85,11 @@ test_set$chol = scale(test_set$chol)
 training_set$thalach = scale(training_set$thalach)
 test_set$thalach = scale(test_set$thalach)
 
-
-
-# Fitting Random Forest Classification to the Training set
-# install.packages('randomForest')
-
 #lmtry=floor(sqrt(ncol(training_set[,2:14])))
 #set.seed(123)
 #mtry <- tuneRF(training_set[,2:14], training_set[,15], stepFactor=1.5, improve=1e-5, ntree=500)
 
-library(randomForest)
+# Fitting Random Forest Classification to the Training set
 set.seed(123)
 classifier = randomForest(x = training_set[,2:14], #training_set['sex']+training_set['age']+training_set['cp']+training_set['exang']+training_set['oldpeak'],
                           y = training_set$num,
@@ -112,8 +103,6 @@ y_pred = predict(classifier, newdata = test_set[,2:14])
 
 # Making the Confusion Matrix
 cm = table(test_set[, 15], y_pred)
-
-#install.packages("caret")
 
 #install.packages("e1071")
 library("e1071")
